@@ -1,3 +1,7 @@
+```mermaid
+---
+title: Animal example
+---
 classDiagram
     %% Core User Classes
     class User {
@@ -451,3 +455,4 @@ classDiagram
 
     Event "1" --> "*" Notification : triggers
     
+```
