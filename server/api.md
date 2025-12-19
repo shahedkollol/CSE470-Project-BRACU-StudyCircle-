@@ -77,6 +77,25 @@ Content-Type: application/json
 }
 ```
 
+### Auth Routes (aliases)
+
+- **Routes:** `/api/auth/register`, `/api/auth/login`
+- **Description:** The routes under `/api/auth` are mounted in the application and act as aliases for `/api/users/register` and `/api/users/login`. They provide the same request/response contracts shown above. Documented here for clarity; prefer using `/api/users/*` in examples to keep a single canonical path.
+
+  - **Example:**
+
+  ```http
+  POST /api/auth/register
+  Content-Type: application/json
+  {
+    "name": "Alice",
+    "email": "alice@example.com",
+    "password": "pass1234",
+    "department": "CSE",
+    "batch": "Spring25"
+  }
+  ```
+
 ---
 
 ## Study Groups
@@ -209,6 +228,66 @@ Content-Type: application/json
 }
 ```
 
+### Tutoring Sessions
+
+- **List Sessions:**
+
+  - **Method:** GET
+  - **Route:** `/api/tutoring/sessions`
+  - **Description:** Get all scheduled tutoring sessions.
+
+  - **Example Response:**
+
+  ```json
+  200 OK
+  [
+    {
+      "_id": "...",
+      "tutor": { "_id": "...", "name": "Alice" },
+      "learner": { "_id": "...", "name": "Bob" },
+      "subject": "CSE101",
+      "scheduledTime": "2025-12-20T10:00:00.000Z",
+      "location": "Room 12",
+      "status": "PENDING"
+    }
+  ]
+  ```
+
+- **Create Session:**
+
+  - **Method:** POST
+  - **Route:** `/api/tutoring/sessions`
+  - **Description:** Schedule a tutoring session.
+
+  - **Example Request:**
+
+  ```http
+  POST /api/tutoring/sessions
+  Content-Type: application/json
+  {
+    "tutor": "<userId>",
+    "learner": "<userId>",
+    "subject": "CSE101",
+    "scheduledTime": "2025-12-20T10:00:00Z",
+    "location": "Room 12"
+  }
+  ```
+
+  - **Example Response:**
+
+  ```json
+  201 Created
+  {
+    "_id": "...",
+    "tutor": "<userId>",
+    "learner": "<userId>",
+    "subject": "CSE101",
+    "scheduledTime": "2025-12-20T10:00:00Z",
+    "location": "Room 12",
+    "status": "PENDING"
+  }
+  ```
+
 ---
 
 ## Thesis Collaboration & Repository
@@ -243,6 +322,33 @@ Content-Type: application/json
 }
 ```
 
+### Join Thesis Group
+
+- **Method:** PUT
+- **Route:** `/api/thesis/groups/:id/join`
+- **Description:** Join a thesis group by ID. Send `{ "userId": "<userId>" }` in the request body.
+
+  - **Example Request:**
+
+  ```http
+  PUT /api/thesis/groups/:id/join
+  Content-Type: application/json
+  {
+    "userId": "<userId>"
+  }
+  ```
+
+  - **Example Response:**
+
+  ```json
+  200 OK
+  {
+    "_id": "...",
+    "members": ["<userId>", "<userId2>"],
+    "leader": "<userId>"
+  }
+  ```
+
 ### Search Theses
 
 - **Method:** GET
@@ -266,6 +372,8 @@ GET /api/thesis/repository/search?keyword=Paper
   }
 ]
 ```
+
+**Note:** `searchThesis` uses a MongoDB `$text` query. Create a text index on the `Thesis` fields you want searchable (e.g., `title`, `abstract`, `keywords`) for this endpoint to work as expected.
 
 ---
 
@@ -356,6 +464,44 @@ Content-Type: application/json
 }
 ```
 
+### Resource: Update / Delete / View / Download / Bookmarks
+
+- **Update Resource:**
+
+  - **Method:** PUT
+  - **Route:** `/api/resources/:id`
+  - **Description:** Update resource metadata (title, tags, subject, etc.).
+
+- **Delete Resource:**
+
+  - **Method:** DELETE
+  - **Route:** `/api/resources/:id`
+  - **Description:** Remove a resource.
+
+- **Increment View Count:**
+
+  - **Method:** POST
+  - **Route:** `/api/resources/:id/view`
+  - **Description:** Increment view count (used by client when resource is viewed).
+
+- **Increment Download Count:**
+
+  - **Method:** POST
+  - **Route:** `/api/resources/:id/download`
+  - **Description:** Increment download counter (used by client when resource is downloaded).
+
+- **List Bookmarks for a User:**
+
+  - **Method:** GET
+  - **Route:** `/api/resources/bookmarks/:userId`
+  - **Description:** Get all bookmarks for a given user (populates resource details).
+
+- **Remove Bookmark:**
+
+  - **Method:** DELETE
+  - **Route:** `/api/resources/:id/bookmark`
+  - **Description:** Remove a bookmark for a user (send `{ "userId": "..." }` in body).
+
 ---
 
 ## Events
@@ -411,6 +557,22 @@ Content-Type: application/json
 }
 ```
 
+### Cancel RSVP
+
+- **Method:** POST
+- **Route:** `/api/events/:id/cancel`
+- **Description:** Cancel an RSVP. Send `{ "userId": "<userId>" }` in the request body.
+
+  - **Example Response:**
+
+  ```json
+  200 OK
+  {
+    "_id": "123",
+    "attendees": []
+  }
+  ```
+
 ---
 
 ## Admin
@@ -464,6 +626,8 @@ Content-Type: application/json
   "role": "admin"
 }
 ```
+
+**Note:** Valid role values are: `student`, `alumni`, `faculty`, `admin`. The API will reject other values.
 
 ### Delete User
 
