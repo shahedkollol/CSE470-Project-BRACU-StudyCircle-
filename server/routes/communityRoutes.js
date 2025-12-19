@@ -1,25 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { JobPosting, MentorshipRequest } = require('../models/Community');
+const communityController = require("../controllers/community.controller");
 
-// Post a Job (Alumni only)
-router.post('/jobs', async (req, res) => {
-  try {
-    const job = await JobPosting.create(req.body);
-    res.status(201).json(job);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+router.get("/jobs", communityController.listJobs);
+router.post("/jobs", communityController.createJob);
 
-// Request Mentorship
-router.post('/mentorship', async (req, res) => {
-  try {
-    const request = await MentorshipRequest.create(req.body);
-    res.status(201).json(request);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+router.get("/mentorship", communityController.listMentorships);
+router.post("/mentorship", communityController.createMentorship);
 
 module.exports = router;
