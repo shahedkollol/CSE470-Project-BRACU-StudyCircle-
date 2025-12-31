@@ -19,7 +19,13 @@ async function createEvent(req, res) {
         .status(400)
         .json({ message: "title, dateTime, and location are required" });
     }
-    const event = await Event.create(req.body);
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const event = await Event.create({
+      ...req.body,
+      creator: req.user.id,
+    });
     res.status(201).json(event);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -28,8 +34,9 @@ async function createEvent(req, res) {
 
 async function rsvpEvent(req, res) {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "userId is required" });
+    const userId = req.user?.id;
+    if (!userId)
+      return res.status(401).json({ message: "Authentication required" });
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
     if (!event.attendees.includes(userId)) {
@@ -44,8 +51,9 @@ async function rsvpEvent(req, res) {
 
 async function cancelRsvp(req, res) {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "userId is required" });
+    const userId = req.user?.id;
+    if (!userId)
+      return res.status(401).json({ message: "Authentication required" });
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
     event.attendees = event.attendees.filter((id) => id.toString() !== userId);

@@ -3,39 +3,50 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
   const { user } = useAuth();
+
+  const features = [
+    { to: "/study-groups", icon: "👥", label: "Study Groups" },
+    { to: "/events", icon: "📅", label: "Events" },
+    { to: "/tutoring/posts", icon: "📝", label: "Tutoring Posts" },
+    { to: "/tutoring/sessions", icon: "🎓", label: "Tutoring Sessions" },
+    { to: "/resources", icon: "📚", label: "Resources" },
+    { to: "/thesis", icon: "📖", label: "Thesis Collaboration" },
+    { to: "/community", icon: "💬", label: "Community" },
+    { to: "/alumni", icon: "💼", label: "Alumni Careers" },
+  ];
+
   return (
     <div>
-      <h1>BRACU Study Circle (MVP)</h1>
-      <p>
-        {user
-          ? `Welcome, ${user.name}`
-          : "Please login or register to continue."}
-      </p>
+      <div className="hero">
+        <h1>BRACU Study Circle</h1>
+        <p>
+          {user
+            ? `Welcome back, ${user.name}! Ready to learn and collaborate?`
+            : "Connect with fellow students, share resources, and excel together."}
+        </p>
+      </div>
+
+      {!user && (
+        <div
+          className="card"
+          style={{ textAlign: "center", marginBottom: "var(--space-lg)" }}
+        >
+          <p style={{ margin: 0 }}>
+            Please <Link to="/login">login</Link> or{" "}
+            <Link to="/register">register</Link> to access all features.
+          </p>
+        </div>
+      )}
+
       <ul className="link-list">
-        <li>
-          <Link to="/study-groups">Study Groups</Link>
-        </li>
-        <li>
-          <Link to="/events">Events</Link>
-        </li>
-        <li>
-          <Link to="/tutoring/posts">Tutoring Posts</Link>
-        </li>
-        <li>
-          <Link to="/tutoring/sessions">Tutoring Sessions</Link>
-        </li>
-        <li>
-          <Link to="/resources">Resources</Link>
-        </li>
-        <li>
-          <Link to="/thesis">Thesis Collaboration</Link>
-        </li>
-        <li>
-          <Link to="/community">Community</Link>
-        </li>
-        <li>
-          <Link to="/admin">Admin</Link>
-        </li>
+        {features.map((f) => (
+          <li key={f.to}>
+            <Link to={f.to}>
+              <span style={{ fontSize: "1.25rem" }}>{f.icon}</span>
+              {f.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );

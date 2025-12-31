@@ -11,26 +11,28 @@ export default function Community() {
     description: "",
     requirements: "",
   });
-  const [mentorship, setMentorship] = useState([]);
+  const [mentorshipAll, setMentorshipAll] = useState([]);
+  const [mentorshipMine, setMentorshipMine] = useState([]);
   const [mentForm, setMentForm] = useState({ alumni: "", message: "" });
   const [error, setError] = useState("");
 
-  const load = async () => {
-    try {
-      const [jobsData, mentData] = await Promise.all([
-        api.community.listJobs(),
-        api.community.listMentorship(),
-      ]);
-      setJobs(jobsData);
-      setMentorship(mentData);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   useEffect(() => {
+    const load = async () => {
+      try {
+        const [jobsData, mentData, mentMine] = await Promise.all([
+          api.community.listJobs(),
+          api.community.listMentorship(),
+          token ? api.community.listMyMentorship(token) : Promise.resolve([]),
+        ]);
+        setJobs(jobsData);
+        setMentorshipAll(mentData);
+        setMentorshipMine(mentMine);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
     load();
-  }, []);
+  }, [token]);
 
   const onJobChange = (e) =>
     setJobForm({ ...jobForm, [e.target.name]: e.target.value });
@@ -48,7 +50,6 @@ export default function Community() {
             .map((s) => s.trim())
             .filter(Boolean)
         : [],
-      poster: user?.id || user?._id,
     };
     try {
       await api.community.createJob(body, token);
@@ -63,13 +64,22 @@ export default function Community() {
     e.preventDefault();
     setError("");
     const body = {
-      student: user?.id || user?._id,
       alumni: mentForm.alumni,
       message: mentForm.message,
     };
     try {
       await api.community.createMentorship(body, token);
       setMentForm({ alumni: "", message: "" });
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const setStatus = async (id, status) => {
+    try {
+      setError("");
+      await api.community.updateMentorshipStatus(id, status, token);
       load();
     } catch (err) {
       setError(err.message);
@@ -145,19 +155,48 @@ export default function Community() {
         </form>
       </div>
       <div className="card">
-        <h2>Mentorship Requests</h2>
+        <h2>My Mentorship</h2>
         <ul className="list">
-          {mentorship.map((m) => (
+          {mentorshipMine.map((m) => {
+            const canAct = user && m.alumni === (user.id || user._id);
+            return (
+              <li key={m._id}>
+                <div>
+                  <strong>{m.message || "No message"}</strong>
+                </div>
+                <div>Student: {m.student}</div>
+                <div>Alumni: {m.alumni}</div>
+                <div>Status: {m.status}</div>
+                {canAct && (
+                  <div className="actions-row">
+                    <button onClick={() => setStatus(m._id, "ACCEPTED")}>
+                      Accept
+                    </button>
+                    <button onClick={() => setStatus(m._id, "REJECTED")}>
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {mentorshipMine.length === 0 && <li>No mentorship requests yet.</li>}
+        </ul>
+      </div>
+      <div className="card">
+        <h2>All Mentorship Requests</h2>
+        <ul className="list">
+          {mentorshipAll.map((m) => (
             <li key={m._id}>
               <div>
-                <strong>{m.message}</strong>
+                <strong>{m.message || "No message"}</strong>
               </div>
               <div>Student: {m.student}</div>
               <div>Alumni: {m.alumni}</div>
               <div>Status: {m.status}</div>
             </li>
           ))}
-          {mentorship.length === 0 && <li>No mentorship requests yet.</li>}
+          {mentorshipAll.length === 0 && <li>No mentorship requests yet.</li>}
         </ul>
       </div>
       {error && <p className="error">{error}</p>}

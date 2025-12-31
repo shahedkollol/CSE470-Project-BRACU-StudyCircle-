@@ -31,10 +31,7 @@ export default function TutoringPosts() {
     e.preventDefault();
     setError("");
     try {
-      await api.tutoring.createPost(
-        { ...form, author: user?.id || user?._id },
-        token
-      );
+      await api.tutoring.createPost({ ...form }, token);
       setForm({ subject: "", description: "", postType: "OFFER" });
       load();
     } catch (err) {

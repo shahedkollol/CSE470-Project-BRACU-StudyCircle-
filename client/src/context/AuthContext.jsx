@@ -47,9 +47,32 @@ export function AuthProvider({ children }) {
     return res.user;
   };
 
+  const refreshProfile = async () => {
+    if (!token) return null;
+    const me = await api.user.me(token);
+    persist(me, token);
+    return me;
+  };
+
+  const updateProfile = async (payload) => {
+    if (!token) throw new Error("Not authenticated");
+    const me = await api.user.updateMe(payload, token);
+    persist(me, token);
+    return me;
+  };
+
   const logout = () => persist(null, null);
 
-  const value = { user, token, loading, login, register, logout };
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    register,
+    logout,
+    refreshProfile,
+    updateProfile,
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

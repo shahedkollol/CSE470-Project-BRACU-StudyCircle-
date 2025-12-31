@@ -3,10 +3,12 @@ import "./App.css";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 import Admin from "./pages/Admin";
+import AlumniCareers from "./pages/AlumniCareers";
 import Community from "./pages/Community";
 import Events from "./pages/Events";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Resources from "./pages/Resources";
 import StudyGroups from "./pages/StudyGroups";
@@ -30,6 +32,8 @@ function App() {
           <Link to="/resources">Resources</Link>
           <Link to="/thesis">Thesis</Link>
           <Link to="/community">Community</Link>
+          <Link to="/alumni">Careers</Link>
+          {user && <Link to="/profile">Profile</Link>}
           {user?.role === "admin" && <Link to="/admin">Admin</Link>}
         </nav>
         <div className="auth-box">
@@ -110,14 +114,26 @@ function App() {
             }
           />
           <Route
-            path="/admin"
+            path="/alumni"
             element={
               <ProtectedRoute>
-                {user?.role === "admin" ? (
-                  <Admin />
-                ) : (
-                  <Navigate to="/" replace />
-                )}
+                <AlumniCareers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <Admin />
               </ProtectedRoute>
             }
           />

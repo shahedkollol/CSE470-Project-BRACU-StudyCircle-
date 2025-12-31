@@ -94,3 +94,84 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    return res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department,
+      batch: user.batch,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+async function updateProfileFields(targetId, body, actingUser) {
+  const allowed = {};
+  ["name", "department", "batch"].forEach((key) => {
+    if (body[key]) allowed[key] = body[key];
+  });
+  if (Object.keys(allowed).length === 0) {
+    const target = await User.findById(targetId);
+    return target;
+  }
+  return User.findByIdAndUpdate(targetId, allowed, {
+    new: true,
+    runValidators: true,
+  });
+}
+
+exports.updateMe = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const updated = await updateProfileFields(req.user.id, req.body, req.user);
+    if (!updated) return res.status(404).json({ message: "User not found" });
+    return res.json({
+      id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      role: updated.role,
+      department: updated.department,
+      batch: updated.batch,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateUserById = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const targetId = req.params.id;
+    const isSelf = req.user.id === targetId;
+    const isAdmin = req.user.role === "admin";
+    if (!isSelf && !isAdmin) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    const updated = await updateProfileFields(targetId, req.body, req.user);
+    if (!updated) return res.status(404).json({ message: "User not found" });
+    return res.json({
+      id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      role: updated.role,
+      department: updated.department,
+      batch: updated.batch,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};

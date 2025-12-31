@@ -37,10 +37,7 @@ export default function Resources() {
     e.preventDefault();
     setError("");
     try {
-      await api.resources.create(
-        { ...form, uploader: user?.id || user?._id },
-        token
-      );
+      await api.resources.create({ ...form }, token);
       setForm({ title: "", fileUrl: "", subject: "", department: "" });
       load();
     } catch (err) {

@@ -31,12 +31,18 @@ async function getResource(req, res) {
 async function createResource(req, res) {
   try {
     const { title, fileUrl } = req.body;
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
     if (!title || !fileUrl) {
       return res
         .status(400)
         .json({ message: "title and fileUrl are required" });
     }
-    const doc = await Resource.create(req.body);
+    const doc = await Resource.create({
+      ...req.body,
+      uploader: req.user.id,
+    });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -100,8 +106,9 @@ async function incrementDownload(req, res) {
 
 async function addBookmark(req, res) {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "userId is required" });
+    const userId = req.user?.id;
+    if (!userId)
+      return res.status(401).json({ message: "Authentication required" });
     const existing = await Bookmark.findOne({
       user: userId,
       resource: req.params.id,
@@ -119,8 +126,9 @@ async function addBookmark(req, res) {
 
 async function removeBookmark(req, res) {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "userId is required" });
+    const userId = req.user?.id;
+    if (!userId)
+      return res.status(401).json({ message: "Authentication required" });
     await Bookmark.findOneAndDelete({ user: userId, resource: req.params.id });
     res.json({ message: "Bookmark removed" });
   } catch (err) {
@@ -131,6 +139,10 @@ async function removeBookmark(req, res) {
 async function listBookmarks(req, res) {
   try {
     const { userId } = req.params;
+    // Only allow a user to view their own bookmarks or admins could be added later
+    if (!req.user || !req.user.id || req.user.id !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const bookmarks = await Bookmark.find({ user: userId })
       .populate("resource")
       .sort({ createdAt: -1 });

@@ -13,6 +13,7 @@ const app = express();
 // middleware
 app.use(cors());
 app.use(express.json());
+app.use(require("./middleware/auth").attachUser);
 
 // routes
 const apiRouter = require("./routes");

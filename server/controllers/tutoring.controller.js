@@ -18,7 +18,13 @@ async function listPosts(req, res) {
 
 async function createPost(req, res) {
   try {
-    const post = await TutoringPost.create(req.body);
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const post = await TutoringPost.create({
+      ...req.body,
+      author: req.user.id,
+    });
     res.status(201).json(post);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -38,7 +44,23 @@ async function listSessions(req, res) {
 
 async function createSession(req, res) {
   try {
-    const session = await TutoringSession.create(req.body);
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    const { learner, subject, scheduledTime, location } = req.body;
+    if (!learner || !subject || !scheduledTime) {
+      return res
+        .status(400)
+        .json({ message: "learner, subject, and scheduledTime are required" });
+    }
+    const session = await TutoringSession.create({
+      tutor: req.user.id,
+      learner,
+      subject,
+      scheduledTime,
+      location,
+      status: req.body.status || "PENDING",
+    });
     res.status(201).json(session);
   } catch (err) {
     res.status(400).json({ message: err.message });

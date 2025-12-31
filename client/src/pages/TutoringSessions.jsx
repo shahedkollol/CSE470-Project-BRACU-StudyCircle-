@@ -37,7 +37,7 @@ export default function TutoringSessions() {
     e.preventDefault();
     setError("");
     try {
-      await api.tutoring.createSession(form, token);
+      await api.tutoring.createSession({ ...form }, token);
       setForm({
         tutor: user?.id || user?._id || "",
         learner: "",

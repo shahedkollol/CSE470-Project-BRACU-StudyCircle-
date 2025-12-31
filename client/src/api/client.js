@@ -1,7 +1,28 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
 
-async function request(path, { method = "GET", token, body } = {}) {
+async function request(path, { method = "GET", token, body, user } = {}) {
   const headers = { "Content-Type": "application/json" };
+
+  // Lightweight header-based guard: propagate user id/role if available
+  let effectiveUser = user;
+  if (!effectiveUser && typeof localStorage !== "undefined") {
+    const saved = localStorage.getItem("auth");
+    if (saved) {
+      try {
+        effectiveUser = JSON.parse(saved)?.user;
+      } catch (err) {
+        console.error("Failed to parse auth", err);
+      }
+    }
+  }
+
+  if (effectiveUser?.id || effectiveUser?._id) {
+    headers["x-user-id"] = effectiveUser.id || effectiveUser._id;
+  }
+  if (effectiveUser?.role) {
+    headers["x-user-role"] = effectiveUser.role;
+  }
+
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}${path}`, {
     method,
@@ -97,6 +118,14 @@ export const api = {
     listMentorship: () => request("/community/mentorship"),
     createMentorship: (body, token) =>
       request("/community/mentorship", { method: "POST", body, token }),
+    listMyMentorship: (token) =>
+      request("/community/mentorship/mine", { token }),
+    updateMentorshipStatus: (id, status, token) =>
+      request(`/community/mentorship/${id}/status`, {
+        method: "PUT",
+        body: { status },
+        token,
+      }),
   },
   admin: {
     listUsers: (token) => request("/admin/users", { token }),
@@ -108,6 +137,31 @@ export const api = {
       }),
     deleteUser: (id, token) =>
       request(`/admin/users/${id}`, { method: "DELETE", token }),
+  },
+  user: {
+    me: (token) => request("/users/me", { token }),
+    updateMe: (body, token) =>
+      request("/users/me", { method: "PUT", body, token }),
+    updateById: (id, body, token) =>
+      request(`/users/${id}`, { method: "PUT", body, token }),
+  },
+  alumni: {
+    listMine: (token) => request("/alumni/employment/me", { token }),
+    create: (body, token) =>
+      request("/alumni/employment", { method: "POST", body, token }),
+    update: (id, body, token) =>
+      request(`/alumni/employment/${id}`, { method: "PUT", body, token }),
+    remove: (id, token) =>
+      request(`/alumni/employment/${id}`, { method: "DELETE", token }),
+    search: (params = {}) => {
+      const qs = new URLSearchParams();
+      ["company", "industry", "title", "location"].forEach((k) => {
+        if (params[k]) qs.set(k, params[k]);
+      });
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/alumni/employment/search${suffix}`);
+    },
+    analytics: () => request("/alumni/employment/analytics"),
   },
 };
 

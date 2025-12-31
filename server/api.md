@@ -2,6 +2,11 @@
 
 All endpoints are prefixed with `/api`.
 
+**Auth model (important):** The current middleware reads `x-user-id` and `x-user-role` headers to authenticate/authorize requests. Bearer JWT tokens are not verified on requests (tokens are only issued, not checked). For protected endpoints, include:
+
+- `x-user-id: <userId>`
+- `x-user-role: <role>` (e.g., `student`, `alumni`, `admin`)
+
 ---
 
 ## User Authentication & Management
@@ -95,6 +100,101 @@ Content-Type: application/json
     "batch": "Spring25"
   }
   ```
+
+### Get Current User Profile
+
+- **Method:** GET
+- **Route:** `/api/users/me`
+- **Description:** Get the profile of the currently authenticated user.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+GET /api/users/me
+x-user-id: <userId>
+x-user-role: student
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "id": "...",
+  "name": "Alice",
+  "email": "alice@example.com",
+  "role": "student",
+  "department": "CSE",
+  "batch": "Spring25"
+}
+```
+
+### Update Current User Profile
+
+- **Method:** PUT
+- **Route:** `/api/users/me`
+- **Description:** Update the profile of the currently authenticated user (name, department, batch).
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+PUT /api/users/me
+x-user-id: <userId>
+x-user-role: student
+Content-Type: application/json
+{
+  "name": "Alice Smith",
+  "department": "CSE",
+  "batch": "Spring25"
+}
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "id": "...",
+  "name": "Alice Smith",
+  "email": "alice@example.com",
+  "role": "student",
+  "department": "CSE",
+  "batch": "Spring25"
+}
+```
+
+### Update User By ID
+
+- **Method:** PUT
+- **Route:** `/api/users/:id`
+- **Description:** Update a user's profile by ID. Users can update their own profile, or admins can update any user.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+PUT /api/users/123
+x-user-id: <userId>
+x-user-role: admin
+Content-Type: application/json
+{
+  "name": "Alice Smith",
+  "department": "EEE"
+}
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "id": "123",
+  "name": "Alice Smith",
+  "email": "alice@example.com",
+  "role": "student",
+  "department": "EEE",
+  "batch": "Spring25"
+}
+```
 
 ---
 
@@ -407,6 +507,35 @@ GET /api/resources?subject=math&tag=calculus
 ]
 ```
 
+### Get Single Resource
+
+- **Method:** GET
+- **Route:** `/api/resources/:id`
+- **Description:** Get a single resource by ID.
+- **Authentication:** Not required.
+- **Example Request:**
+
+```http
+GET /api/resources/123
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "_id": "123",
+  "title": "Calculus Notes",
+  "fileUrl": "https://...",
+  "subject": "Math",
+  "tags": ["calculus"],
+  "viewCount": 10,
+  "downloadCount": 5,
+  "uploader": "<userId>",
+  "createdAt": "2025-12-15T10:00:00Z"
+}
+```
+
 ### Create Resource
 
 - **Method:** POST
@@ -532,6 +661,41 @@ GET /api/events
 ]
 ```
 
+### Create Event
+
+- **Method:** POST
+- **Route:** `/api/events`
+- **Description:** Create a new event.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+POST /api/events
+x-user-id: <userId>
+x-user-role: student
+Content-Type: application/json
+{
+  "title": "Study Session",
+  "dateTime": "2025-12-20T18:00:00Z",
+  "location": "Room 101",
+  "description": "Group study for final exams"
+}
+```
+
+- **Example Response:**
+
+```json
+201 Created
+{
+  "_id": "...",
+  "title": "Study Session",
+  "dateTime": "2025-12-20T18:00:00Z",
+  "location": "Room 101",
+  "description": "Group study for final exams",
+  "attendees": []
+}
+```
+
 ### RSVP to Event
 
 - **Method:** POST
@@ -651,6 +815,211 @@ DELETE /api/admin/users/123
 
 ---
 
+## Alumni Employment & Career Tracking
+
+### List My Employment Entries
+
+- **Method:** GET
+- **Route:** `/api/alumni/employment/me`
+- **Description:** Get all employment entries for the authenticated user.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+GET /api/alumni/employment/me
+x-user-id: <userId>
+x-user-role: student
+```
+
+- **Example Response:**
+
+```json
+200 OK
+[
+  {
+    "_id": "...",
+    "user": "<userId>",
+    "title": "Software Engineer",
+    "company": "Tech Corp",
+    "industry": "Technology",
+    "location": "Dhaka",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": null,
+    "description": "Full-stack development"
+  }
+]
+```
+
+### Create Employment Entry
+
+- **Method:** POST
+- **Route:** `/api/alumni/employment`
+- **Description:** Create a new employment entry for the authenticated user.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+POST /api/alumni/employment
+x-user-id: <userId>
+x-user-role: student
+Content-Type: application/json
+{
+  "title": "Software Engineer",
+  "company": "Tech Corp",
+  "industry": "Technology",
+  "location": "Dhaka",
+  "startDate": "2024-01-15",
+  "description": "Full-stack development"
+}
+```
+
+- **Example Response:**
+
+```json
+201 Created
+{
+  "_id": "...",
+  "user": "<userId>",
+  "title": "Software Engineer",
+  "company": "Tech Corp",
+  "industry": "Technology",
+  "location": "Dhaka",
+  "startDate": "2024-01-15T00:00:00Z",
+  "endDate": null,
+  "description": "Full-stack development"
+}
+```
+
+**Note:** `title`, `company`, and `startDate` are required fields.
+
+### Update Employment Entry
+
+- **Method:** PUT
+- **Route:** `/api/alumni/employment/:id`
+- **Description:** Update an employment entry. Only the owner or admin can update.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+PUT /api/alumni/employment/123
+x-user-id: <userId>
+x-user-role: student
+Content-Type: application/json
+{
+  "title": "Senior Software Engineer",
+  "endDate": "2025-12-31"
+}
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "_id": "123",
+  "user": "<userId>",
+  "title": "Senior Software Engineer",
+  "company": "Tech Corp",
+  "industry": "Technology",
+  "location": "Dhaka",
+  "startDate": "2024-01-15T00:00:00Z",
+  "endDate": "2025-12-31T00:00:00Z",
+  "description": "Full-stack development"
+}
+```
+
+### Delete Employment Entry
+
+- **Method:** DELETE
+- **Route:** `/api/alumni/employment/:id`
+- **Description:** Delete an employment entry. Only the owner or admin can delete.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+DELETE /api/alumni/employment/123
+x-user-id: <userId>
+x-user-role: student
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "message": "Deleted"
+}
+```
+
+### Search Employment
+
+- **Method:** GET
+- **Route:** `/api/alumni/employment/search?company=Tech&industry=Technology&title=Engineer&location=Dhaka`
+- **Description:** Search employment entries by filters (company, industry, title, location). All filters are optional and case-insensitive.
+- **Example Request:**
+
+```http
+GET /api/alumni/employment/search?company=Tech&industry=Technology
+```
+
+- **Example Response:**
+
+```json
+200 OK
+[
+  {
+    "_id": "...",
+    "user": "<userId>",
+    "title": "Software Engineer",
+    "company": "Tech Corp",
+    "industry": "Technology",
+    "location": "Dhaka",
+    "startDate": "2024-01-15T00:00:00Z"
+  }
+]
+```
+
+### Employment Analytics
+
+- **Method:** GET
+- **Route:** `/api/alumni/employment/analytics`
+- **Description:** Get aggregated analytics on employment data by industry and year.
+- **Example Request:**
+
+```http
+GET /api/alumni/employment/analytics
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "byIndustry": [
+    {
+      "_id": "Technology",
+      "count": 45
+    },
+    {
+      "_id": "Finance",
+      "count": 23
+    }
+  ],
+  "byYear": [
+    {
+      "_id": 2024,
+      "count": 30
+    },
+    {
+      "_id": 2025,
+      "count": 38
+    }
+  ]
+}
+```
+
+---
+
 ## Community (Jobs & Mentorship)
 
 ### List Jobs
@@ -710,14 +1079,15 @@ Content-Type: application/json
 
 - **Method:** POST
 - **Route:** `/api/community/mentorship`
-- **Description:** Request mentorship from alumni.
+- **Description:** Request mentorship from alumni. The student field is automatically set to the authenticated user.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
 - **Example Request:**
 
 ```http
 POST /api/community/mentorship
+Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
 {
-  "student": "<userId>",
   "alumni": "<userId>",
   "message": "Can you help with thesis?"
 }
@@ -731,6 +1101,95 @@ Content-Type: application/json
   "_id": "...",
   "student": "<userId>",
   "alumni": "<userId>",
-  "message": "Can you help with thesis?"
+  "message": "Can you help with thesis?",
+  "status": "PENDING"
 }
 ```
+
+### List All Mentorship Requests
+
+- **Method:** GET
+- **Route:** `/api/community/mentorship`
+- **Description:** Get all mentorship requests.
+- **Example Request:**
+
+```http
+GET /api/community/mentorship
+```
+
+- **Example Response:**
+
+```json
+200 OK
+[
+  {
+    "_id": "...",
+    "student": "<userId>",
+    "alumni": "<userId>",
+    "message": "Can you help with thesis?",
+    "status": "PENDING",
+    "createdAt": "2025-12-15T10:00:00Z"
+  }
+]
+```
+
+### List My Mentorship Requests
+
+- **Method:** GET
+- **Route:** `/api/community/mentorship/mine`
+- **Description:** Get mentorship requests where the authenticated user is either the student or the alumni.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers)
+- **Example Request:**
+
+```http
+GET /api/community/mentorship/mine
+Authorization: Bearer <JWT_TOKEN>
+```
+
+- **Example Response:**
+
+```json
+200 OK
+[
+  {
+    "_id": "...",
+    "student": "<userId>",
+    "alumni": "<currentUserId>",
+    "message": "Can you help with thesis?",
+    "status": "PENDING",
+    "createdAt": "2025-12-15T10:00:00Z"
+  }
+]
+```
+
+### Update Mentorship Status
+
+- **Method:** PUT
+- **Route:** `/api/community/mentorship/:id/status`
+- **Description:** Update the status of a mentorship request. Only the alumni (mentor) or admin can update the status.
+- **Authentication:** Required (`x-user-id`, `x-user-role` headers; must be the alumni or admin)
+- **Example Request:**
+
+```http
+PUT /api/community/mentorship/123/status
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+{
+  "status": "ACCEPTED"
+}
+```
+
+- **Example Response:**
+
+```json
+200 OK
+{
+  "_id": "123",
+  "student": "<userId>",
+  "alumni": "<userId>",
+  "message": "Can you help with thesis?",
+  "status": "ACCEPTED"
+}
+```
+
+**Note:** Valid status values are: `PENDING`, `ACCEPTED`, `REJECTED`.

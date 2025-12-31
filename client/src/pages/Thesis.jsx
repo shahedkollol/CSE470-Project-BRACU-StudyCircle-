@@ -44,7 +44,6 @@ export default function Thesis() {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-      leader: user?.id || user?._id,
     };
     try {
       await api.thesis.createGroup(body, token);
@@ -59,7 +58,7 @@ export default function Thesis() {
     e.preventDefault();
     setError("");
     try {
-      await api.thesis.joinGroup(joinId, user?.id || user?._id, token);
+      await api.thesis.joinGroup(joinId, undefined, token);
       setJoinId("");
       loadGroups();
     } catch (err) {

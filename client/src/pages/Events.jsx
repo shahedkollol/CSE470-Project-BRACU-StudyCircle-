@@ -32,10 +32,7 @@ export default function Events() {
     e.preventDefault();
     setError("");
     try {
-      await api.events.create(
-        { ...form, creator: user?._id || user?.id },
-        token
-      );
+      await api.events.create({ ...form }, token);
       setForm({ title: "", description: "", dateTime: "", location: "" });
       load();
     } catch (err) {
@@ -47,7 +44,7 @@ export default function Events() {
     if (!user) return;
     try {
       setError("");
-      await api.events.rsvp(id, user.id || user._id, token);
+      await api.events.rsvp(id, undefined, token);
       load();
     } catch (err) {
       setError(err.message);
@@ -58,7 +55,7 @@ export default function Events() {
     if (!user) return;
     try {
       setError("");
-      await api.events.cancel(id, user.id || user._id, token);
+      await api.events.cancel(id, undefined, token);
       load();
     } catch (err) {
       setError(err.message);

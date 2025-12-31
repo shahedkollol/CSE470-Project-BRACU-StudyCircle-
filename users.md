@@ -1,25 +1,52 @@
-# Test Users for StudyCircle
+# BRACU CSE Test Accounts
 
-Use these credentials to log in to the frontend for testing. Mm Hmm
+Use these BRAC University CSE-themed accounts for manual testing. They are already registered in the backend. Passwords are student-friendly but non-trivial. No tokens are stored here.
 
-## Admin User
+## Admin (Dept Coordinator)
 
-- Name: Admin User
-- Email: admin1@example.com
-- Password: adminpass123
+- Name: CSE Coordinator
+- Email: coordinator@bracu.ac.bd
+- Password: CSEadmin!23
 - Role: admin
 - Department: CSE
-- Batch: 2020
-- ID: 694588c2d65631cabba42ec4
-- Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NDU4OGMyZDY1NjMxY2FiYmE0MmVjNCIsInJvbGUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY2MTY0Njg5LCJleHAiOjE3NjY3Njk0ODl9.u1BDxVn60IbWMlEmyr1qbQQrmwDRNhCyvyXjAHdr32g
+- Batch: 2018
+- ID: 69556b1b554a4dbce02e30c7
 
-## Regular User
+## Faculty Mentor
 
-- Name: Test User
-- Email: user1@example.com
-- Password: password123
+- Name: Dr. Farzana Rahman
+- Email: farzana.rahman@bracu.ac.bd
+- Password: Mentor@CSE
+- Role: faculty
+- Department: CSE
+- Batch: 2008
+- ID: 69556b1b554a4dbce02e30ca
+
+## Senior Student
+
+- Name: Taufiq Hasan
+- Email: taufiq.hasan@bracu.ac.bd
+- Password: Study@52
 - Role: student
 - Department: CSE
-- Batch: 2021
-- ID: 694588cad65631cabba42ec7
-- Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NDU4OGNhZDY1NjMxY2FiYmE0MmVjNyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjE2NDY5NCwiZXhwIjoxNzY2NzY5NDk0fQ.0UPWysH0hLKRfzFN_wwNIemt3yPnx6ik5HP7i-CJ_Bw
+- Batch: 52
+- ID: 69556b1b554a4dbce02e30cd
+
+## Alumni (Industry)
+
+- Name: Shorna Mahmud
+- Email: shorna.mahmud@alumni.bracu.ac.bd
+- Password: Alumni@CSE
+- Role: alumni
+- Department: CSE
+- Batch: 2020
+- ID: 69556b1c554a4dbce02e30d0
+
+### Auth Headers (current backend behavior)
+
+The backend accepts `x-user-id` and `x-user-role` headers instead of Bearer JWT verification. Use the IDs above:
+
+- `x-user-id: <ID>`
+- `x-user-role: <role>`
+
+If JWT verification is later enabled, switch to the usual `Authorization: Bearer <token>` flow.

@@ -11,11 +11,16 @@ async function listStudyGroups(req, res) {
 
 async function createStudyGroup(req, res) {
   try {
-    const { title, course, creatorName } = req.body;
+    const { title, course } = req.body;
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    if (!title || !course || !creatorName) {
+    if (!title || !course) {
       return res.status(400).json({ message: "Missing fields" });
     }
+
+    const creatorName = req.user.id;
 
     const group = await StudyGroup.create({
       title,

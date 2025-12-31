@@ -10,6 +10,7 @@ const thesisRoutes = require("./thesisRoutes");
 const resourceRoutes = require("./resourceRoutes");
 const eventRoutes = require("./eventRoutes");
 const adminRoutes = require("./adminRoutes");
+const alumniRoutes = require("./alumniRoutes");
 
 router.use("/study-groups", studyGroupRoutes);
 router.use("/users", userRoutes);
@@ -20,5 +21,6 @@ router.use("/thesis", thesisRoutes);
 router.use("/resources", resourceRoutes);
 router.use("/events", eventRoutes);
 router.use("/admin", adminRoutes);
+router.use("/alumni", alumniRoutes);
 
 module.exports = router;
