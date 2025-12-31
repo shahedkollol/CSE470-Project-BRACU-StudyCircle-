@@ -10,12 +10,12 @@ console.log("JWT_SECRET set?", process.env.JWT_SECRET ? "YES" : "NO");
 
 const app = express();
 
-// middlewares
+// middleware
 app.use(cors());
 app.use(express.json());
 app.use(require("./middleware/auth").attachUser);
 
-// route
+// routes
 const apiRouter = require("./routes");
 
 app.get("/", (req, res) => {
