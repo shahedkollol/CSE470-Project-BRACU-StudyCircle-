@@ -265,12 +265,20 @@ Content-Type: application/json
 ### List Tutoring Posts
 
 - **Method:** GET
-- **Route:** `/api/tutoring/posts?subject=math`
-- **Description:** Get all tutoring posts, optionally filter by subject.
+- **Route:** `/api/tutoring/posts`
+- **Description:** Get tutoring posts with optional filters/sorting/pagination.
+- **Query Params:**
+  - `subject` (string, partial match)
+  - `postType` (`OFFER` | `REQUEST`)
+  - `meetingMode` (`ONLINE` | `OFFLINE` | `HYBRID`)
+  - `availability` (string, substring match against availability entries)
+  - `rateMin` / `rateMax` (number range)
+  - `sort` (`newest` [default], `rateAsc`, `rateDesc`)
+  - `page` (default 1) and `limit` (default 50, max 100)
 - **Example Request:**
 
 ```http
-GET /api/tutoring/posts?subject=math
+GET /api/tutoring/posts?subject=data&postType=OFFER&meetingMode=ONLINE&rateMax=500&sort=rateAsc
 ```
 
 - **Example Response:**
@@ -387,6 +395,32 @@ Content-Type: application/json
     "status": "PENDING"
   }
   ```
+
+### Rate Session
+
+- **Method:** POST
+- **Route:** `/api/tutoring/sessions/:id/rating`
+- **Auth:** learner of the session
+- **Body:** `{ "stars": 1-5, "review": "optional" }`
+
+### Update Session Status
+
+- **Method:** PUT
+- **Route:** `/api/tutoring/sessions/:id/status`
+- **Auth:** tutor/learner of session (admin allowed)
+- **Body:** `{ "status": "ACCEPTED" | "REJECTED" | "COMPLETED" | "CANCELLED" }`
+
+### Tutor Favorites
+
+- **Method:** GET `/api/tutoring/favorites` (auth, student)
+- **Method:** POST `/api/tutoring/favorites/:tutorId` (auth, student)
+- **Method:** DELETE `/api/tutoring/favorites/:tutorId` (auth, student)
+
+### Tutor Leaderboard
+
+- **Method:** GET
+- **Route:** `/api/tutoring/leaderboard`
+- **Description:** Top tutors by average rating and completed sessions.
 
 ---
 
@@ -1161,6 +1195,48 @@ Authorization: Bearer <JWT_TOKEN>
   }
 ]
 ```
+
+---
+
+## Resources
+
+### List Resources
+
+- **Method:** GET
+- **Route:** `/api/resources`
+- **Query Params:** `search`, `subject`, `department`, `tag`, `fileType`, `minRating`, `from`, `to`
+
+### Create Resource
+
+- **Method:** POST
+- **Route:** `/api/resources`
+- **Auth:** required (`x-user-id`, `x-user-role`)
+- **Body:** `title`, `fileUrl`, `fileType`, `subject`, `department`, `tags[]`, `description`
+
+### View / Download Counters
+
+- `POST /api/resources/:id/view`
+- `POST /api/resources/:id/download`
+
+### Bookmark Resource
+
+- `POST /api/resources/:id/bookmark` (auth)
+- `DELETE /api/resources/:id/bookmark` (auth)
+- `GET /api/resources/bookmarks/:userId` (auth, own only)
+
+### Rate / Review Resource
+
+- **Method:** POST
+- **Route:** `/api/resources/:id/reviews`
+- **Auth:** required
+- **Body:** `{ "stars": 1-5, "comment": "optional" }`
+
+### Report Resource
+
+- **Method:** POST
+- **Route:** `/api/resources/:id/report`
+- **Auth:** required
+- **Body:** `{ "reason": "string" }`
 
 ### Update Mentorship Status
 

@@ -75,7 +75,9 @@
 
 body {
   margin: 0;
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, #f9fbff 0%, #eef2ff 35%, #f8fafc 100%);
+  min-height: 100vh;
+  padding: 0;
 }
 
 a {

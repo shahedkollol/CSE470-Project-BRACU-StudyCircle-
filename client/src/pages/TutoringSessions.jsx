@@ -5,19 +5,30 @@ import { useAuth } from "../context/AuthContext";
 export default function TutoringSessions() {
   const { user, token } = useAuth();
   const [list, setList] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
   const [form, setForm] = useState({
-    tutor: "",
     learner: "",
     subject: "",
     scheduledTime: "",
     location: "",
   });
+  const [ratingDrafts, setRatingDrafts] = useState({});
   const [error, setError] = useState("");
 
   const load = async () => {
     try {
       const data = await api.tutoring.listSessions();
       setList(data);
+      setRatingDrafts({});
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const loadLeaderboard = async () => {
+    try {
+      const data = await api.tutoring.leaderboard();
+      setLeaderboard(data);
     } catch (err) {
       setError(err.message);
     }
@@ -25,11 +36,8 @@ export default function TutoringSessions() {
 
   useEffect(() => {
     load();
+    loadLeaderboard();
   }, []);
-
-  useEffect(() => {
-    if (user) setForm((f) => ({ ...f, tutor: user.id || user._id }));
-  }, [user]);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -39,7 +47,6 @@ export default function TutoringSessions() {
     try {
       await api.tutoring.createSession({ ...form }, token);
       setForm({
-        tutor: user?.id || user?._id || "",
         learner: "",
         subject: "",
         scheduledTime: "",
@@ -51,13 +58,55 @@ export default function TutoringSessions() {
     }
   };
 
+  const updateStatus = async (id, status) => {
+    setError("");
+    try {
+      await api.tutoring.updateSessionStatus(id, status, token);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const ratingDraft = (session) =>
+    ratingDrafts[session._id] || {
+      stars: session.rating?.stars ? String(session.rating.stars) : "5",
+      review: session.rating?.review || "",
+    };
+
+  const onRatingChange = (sessionId, field, value) => {
+    setRatingDrafts((prev) => ({
+      ...prev,
+      [sessionId]: { ...prev[sessionId], [field]: value },
+    }));
+  };
+
+  const submitRating = async (session) => {
+    setError("");
+    const draft = ratingDraft(session);
+    try {
+      await api.tutoring.rateSession(
+        session._id,
+        { stars: Number(draft.stars), review: draft.review },
+        token
+      );
+      load();
+      loadLeaderboard();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const isTutor = (session) =>
+    user && (user.id === session.tutor?._id || user._id === session.tutor);
+  const isLearner = (session) =>
+    user && (user.id === session.learner?._id || user._id === session.learner);
+
   return (
     <div className="grid">
       <div className="card">
         <h2>Create Session</h2>
         <form onSubmit={onSubmit}>
-          <label>Tutor Id</label>
-          <input name="tutor" value={form.tutor} onChange={onChange} required />
           <label>Learner Id</label>
           <input
             name="learner"
@@ -99,10 +148,85 @@ export default function TutoringSessions() {
               <div>{s.scheduledTime}</div>
               <div>{s.location}</div>
               <div>Status: {s.status}</div>
+              {s.rating?.stars ? (
+                <div>
+                  Rating: {s.rating.stars} ★
+                  {s.rating.review ? ` — ${s.rating.review}` : ""}
+                </div>
+              ) : null}
+              {user && (
+                <div className="actions-row" style={{ marginTop: "6px" }}>
+                  {s.status === "PENDING" && isTutor(s) && (
+                    <>
+                      <button onClick={() => updateStatus(s._id, "ACCEPTED")}>
+                        Accept
+                      </button>
+                      <button onClick={() => updateStatus(s._id, "REJECTED")}>
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {s.status === "ACCEPTED" && isTutor(s) && (
+                    <button onClick={() => updateStatus(s._id, "COMPLETED")}>
+                      Complete
+                    </button>
+                  )}
+                  {s.status !== "CANCELLED" &&
+                    s.status !== "REJECTED" &&
+                    s.status !== "COMPLETED" &&
+                    (isTutor(s) || isLearner(s)) && (
+                      <button onClick={() => updateStatus(s._id, "CANCELLED")}>
+                        Cancel
+                      </button>
+                    )}
+                </div>
+              )}
+              {user && s.status === "COMPLETED" && isLearner(s) && (
+                <div style={{ marginTop: "8px" }}>
+                  <label>Rate this session</label>
+                  <div className="actions-row">
+                    <select
+                      value={ratingDraft(s).stars}
+                      onChange={(e) =>
+                        onRatingChange(s._id, "stars", e.target.value)
+                      }
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      placeholder="Review (optional)"
+                      value={ratingDraft(s).review}
+                      onChange={(e) =>
+                        onRatingChange(s._id, "review", e.target.value)
+                      }
+                    />
+                    <button onClick={() => submitRating(s)}>Submit</button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
           {list.length === 0 && <li>No sessions yet.</li>}
         </ul>
+      </div>
+      <div className="card">
+        <h2>Tutor Leaderboard</h2>
+        <ol className="list" style={{ listStyle: "decimal" }}>
+          {leaderboard.map((entry) => (
+            <li key={entry.tutorId}>
+              <div>
+                <strong>{entry.tutorName || "(Unknown)"}</strong>
+              </div>
+              <div>Average Rating: {entry.avgRating ?? "N/A"}</div>
+              <div>Completed Sessions: {entry.completed}</div>
+            </li>
+          ))}
+          {leaderboard.length === 0 && <li>No rated sessions yet.</li>}
+        </ol>
       </div>
     </div>
   );

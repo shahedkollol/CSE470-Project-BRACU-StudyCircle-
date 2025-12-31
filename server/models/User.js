@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
 
+    favoriteTutors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     department: { type: String, required: true },
     batch: { type: String, required: true },
   },

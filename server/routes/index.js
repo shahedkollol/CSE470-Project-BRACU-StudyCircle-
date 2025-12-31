@@ -11,6 +11,7 @@ const resourceRoutes = require("./resourceRoutes");
 const eventRoutes = require("./eventRoutes");
 const adminRoutes = require("./adminRoutes");
 const alumniRoutes = require("./alumniRoutes");
+const notificationRoutes = require("./notificationRoutes");
 
 router.use("/study-groups", studyGroupRoutes);
 router.use("/users", userRoutes);
@@ -22,5 +23,6 @@ router.use("/resources", resourceRoutes);
 router.use("/events", eventRoutes);
 router.use("/admin", adminRoutes);
 router.use("/alumni", alumniRoutes);
+router.use("/notifications", notificationRoutes);
 
 module.exports = router;

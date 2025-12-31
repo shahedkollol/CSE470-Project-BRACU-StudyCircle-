@@ -8,6 +8,7 @@ import Community from "./pages/Community";
 import Events from "./pages/Events";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Resources from "./pages/Resources";
@@ -33,6 +34,7 @@ function App() {
           <Link to="/thesis">Thesis</Link>
           <Link to="/community">Community</Link>
           <Link to="/alumni">Careers</Link>
+          {user && <Link to="/notifications">Notifications</Link>}
           {user && <Link to="/profile">Profile</Link>}
           {user?.role === "admin" && <Link to="/admin">Admin</Link>}
         </nav>
@@ -110,6 +112,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Community />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
               </ProtectedRoute>
             }
           />

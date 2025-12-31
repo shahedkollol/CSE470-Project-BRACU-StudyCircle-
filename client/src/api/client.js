@@ -1,7 +1,10 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
 
 async function request(path, { method = "GET", token, body, user } = {}) {
-  const headers = { "Content-Type": "application/json" };
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+  const headers = {};
+  if (!isFormData) headers["Content-Type"] = "application/json";
 
   // Lightweight header-based guard: propagate user id/role if available
   let effectiveUser = user;
@@ -27,7 +30,7 @@ async function request(path, { method = "GET", token, body, user } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
   const isJson = res.headers.get("content-type")?.includes("application/json");
   const data = isJson ? await res.json() : await res.text();
@@ -66,31 +69,102 @@ export const api = {
       }),
   },
   tutoring: {
-    listPosts: () => request("/tutoring/posts"),
+    listPosts: (params = {}) => {
+      const qs = new URLSearchParams();
+      ["subject", "postType", "meetingMode", "availability", "sort"].forEach(
+        (key) => {
+          if (params[key]) qs.set(key, params[key]);
+        }
+      );
+      [
+        ["rateMin", params.rateMin],
+        ["rateMax", params.rateMax],
+        ["page", params.page],
+        ["limit", params.limit],
+      ].forEach(([key, val]) => {
+        if (val !== undefined && val !== "") qs.set(key, val);
+      });
+
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/tutoring/posts${suffix}`);
+    },
     createPost: (body, token) =>
       request("/tutoring/posts", { method: "POST", body, token }),
     listSessions: () => request("/tutoring/sessions"),
     createSession: (body, token) =>
       request("/tutoring/sessions", { method: "POST", body, token }),
+    updateSessionStatus: (id, status, token) =>
+      request(`/tutoring/sessions/${id}/status`, {
+        method: "PUT",
+        body: { status },
+        token,
+      }),
+    rateSession: (id, body, token) =>
+      request(`/tutoring/sessions/${id}/rating`, {
+        method: "POST",
+        body,
+        token,
+      }),
+    leaderboard: () => request("/tutoring/leaderboard"),
+    listFavorites: (token) => request("/tutoring/favorites", { token }),
+    addFavorite: (tutorId, token) =>
+      request(`/tutoring/favorites/${tutorId}`, { method: "POST", token }),
+    removeFavorite: (tutorId, token) =>
+      request(`/tutoring/favorites/${tutorId}`, { method: "DELETE", token }),
   },
   resources: {
-    list: () => request("/resources"),
+    list: (params = {}) => {
+      const qs = new URLSearchParams();
+      [
+        "subject",
+        "department",
+        "tag",
+        "search",
+        "fileType",
+        "minRating",
+        "from",
+        "to",
+      ].forEach((key) => {
+        if (params[key]) qs.set(key, params[key]);
+      });
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/resources${suffix}`);
+    },
     create: (body, token) =>
-      request("/resources", { method: "POST", body, token }),
-    bookmark: (id, userId, token) =>
-      request(`/resources/${id}/bookmark`, {
+      request("/resources", {
         method: "POST",
-        body: { userId },
+        body:
+          body?.file && typeof FormData !== "undefined"
+            ? (() => {
+                const fd = new FormData();
+                Object.entries(body).forEach(([key, val]) => {
+                  if (val === undefined || val === null) return;
+                  if (key === "file") {
+                    fd.append("file", val);
+                  } else if (Array.isArray(val)) {
+                    val.forEach((item) => fd.append(key, item));
+                  } else {
+                    fd.append(key, val);
+                  }
+                });
+                return fd;
+              })()
+            : body,
         token,
       }),
-    unbookmark: (id, userId, token) =>
-      request(`/resources/${id}/bookmark`, {
-        method: "DELETE",
-        body: { userId },
-        token,
-      }),
+    bookmark: (id, token) =>
+      request(`/resources/${id}/bookmark`, { method: "POST", token }),
+    unbookmark: (id, token) =>
+      request(`/resources/${id}/bookmark`, { method: "DELETE", token }),
     bookmarks: (userId, token) =>
       request(`/resources/bookmarks/${userId}`, { token }),
+    addReview: (id, body, token) =>
+      request(`/resources/${id}/reviews`, { method: "POST", body, token }),
+    trackView: (id) => request(`/resources/${id}/view`, { method: "POST" }),
+    trackDownload: (id) =>
+      request(`/resources/${id}/download`, { method: "POST" }),
+    report: (id, body, token) =>
+      request(`/resources/${id}/report`, { method: "POST", body, token }),
   },
   thesis: {
     listGroups: () => request("/thesis/groups"),
@@ -162,6 +236,11 @@ export const api = {
       return request(`/alumni/employment/search${suffix}`);
     },
     analytics: () => request("/alumni/employment/analytics"),
+  },
+  notifications: {
+    list: (token) => request("/notifications", { token }),
+    markRead: (id, token) =>
+      request(`/notifications/${id}/read`, { method: "PUT", token }),
   },
 };
 

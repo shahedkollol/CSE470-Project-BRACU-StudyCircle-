@@ -14,6 +14,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(require("./middleware/auth").attachUser);
+// serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // routes
 const apiRouter = require("./routes");
