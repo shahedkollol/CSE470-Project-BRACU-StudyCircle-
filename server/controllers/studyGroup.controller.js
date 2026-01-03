@@ -1,42 +1,61 @@
 const StudyGroup = require("../models/StudyGroup");
 
-async function listStudyGroups(req, res) {
+exports.createStudyGroup = async (req, res) => {
   try {
-    const groups = await StudyGroup.find();
-    res.json(groups);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+    const { name, courseCode, description, privacy } = req.body;
 
-async function createStudyGroup(req, res) {
-  try {
-    const { title, course } = req.body;
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Authentication required" });
+    if (!name) {
+      return res.status(400).json({ message: "Group name is required" });
     }
 
-    if (!title || !course) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
-
-    const creatorName = req.user.id;
+    const userId = req.user.id || req.user._id;
 
     const group = await StudyGroup.create({
-      title,
-      course,
-      creatorName,
-      members: [creatorName],
-      status: "active",
+      name,
+      courseCode,
+      description,
+      privacy: privacy || "public",
+      ownerId: userId,
+      members: [userId],
     });
 
     res.status(201).json(group);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-}
+};
 
-module.exports = {
-  listStudyGroups,
-  createStudyGroup,
+exports.getAllStudyGroups = async (req, res) => {
+  const groups = await StudyGroup.find();
+  res.json(groups);
+};
+
+exports.joinStudyGroup = async (req, res) => {
+  const group = await StudyGroup.findById(req.params.id);
+
+  if (!group) {
+    return res.status(404).json({ message: "Study group not found" });
+  }
+
+  if (group.members.includes(req.user.id)) {
+    return res.status(400).json({ message: "Already joined" });
+  }
+
+  group.members.push(req.user.id);
+  await group.save();
+
+  res.json({ message: "Joined successfully ✅" });
+};
+
+exports.leaveStudyGroup = async (req, res) => {
+  const group = await StudyGroup.findById(req.params.id);
+
+  if (!group) {
+    return res.status(404).json({ message: "Study group not found" });
+  }
+
+  group.members = group.members.filter((m) => m.toString() !== req.user.id);
+
+  await group.save();
+  res.json({ message: "Left successfully ✅" });
 };

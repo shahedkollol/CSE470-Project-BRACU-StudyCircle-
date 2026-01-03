@@ -1,15 +1,21 @@
 const mongoose = require("mongoose");
 
-const StudyGroupSchema = new mongoose.Schema(
+const studyGroupSchema = new mongoose.Schema(
   {
-    title: String,
-    course: String,
-    description: String,
-    creatorName: String,
-    members: [String],
-    status: String,
+    title: { type: String, required: true },
+    course: { type: String, required: true },
+    description: { type: String, default: "" },
+    creatorName: { type: String, required: true },
+
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("StudyGroup", StudyGroupSchema);
+module.exports = mongoose.model("StudyGroup", studyGroupSchema);

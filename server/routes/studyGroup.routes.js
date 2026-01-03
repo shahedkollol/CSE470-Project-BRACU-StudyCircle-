@@ -1,10 +1,17 @@
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
+const studyGroupController = require("../controllers/studyGroup.controller");
+const authMiddleware = require("../middleware/auth.middleware");
 
-const controller = require("../controllers/studyGroup.controller");
-const { requireUser } = require("../middleware/auth");
+// create study group
+router.post("/", studyGroupController.createStudyGroup);
 
-router.get("/", controller.listStudyGroups);
-router.post("/", requireUser, controller.createStudyGroup);
+// get all study groups
+router.get("/", studyGroupController.getAllStudyGroups);
+
+// join study group
+router.post("/:id/join", authMiddleware, studyGroupController.joinStudyGroup);
+
+// leave study group
+router.post("/:id/leave", authMiddleware, studyGroupController.leaveStudyGroup);
 
 module.exports = router;

@@ -4,10 +4,7 @@ const router = express.Router();
 const userController = require("../controllers/user.controller");
 const { requireUser } = require("../middleware/auth");
 
-// Register user
 router.post("/register", userController.register);
-
-// Login user
 router.post("/login", userController.login);
 
 // Get current user profile
