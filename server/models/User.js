@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema(
 
     department: { type: String, required: true },
     batch: { type: String, required: true },
+    studentId: { type: String, trim: true },
   },
   { timestamps: true }
 );

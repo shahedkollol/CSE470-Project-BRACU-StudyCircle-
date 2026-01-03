@@ -11,6 +11,7 @@ export default function Register() {
     password: "",
     department: "",
     batch: "",
+    studentId: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,6 +57,8 @@ export default function Register() {
         />
         <label>Batch</label>
         <input name="batch" value={form.batch} onChange={onChange} required />
+        <label>Student ID (optional)</label>
+        <input name="studentId" value={form.studentId} onChange={onChange} />
         <button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>
