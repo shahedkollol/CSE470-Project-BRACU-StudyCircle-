@@ -91,6 +91,7 @@ async function searchEmployment(req, res) {
     if (title) query.title = new RegExp(title, "i");
     if (location) query.location = new RegExp(location, "i");
     const results = await Employment.find(query)
+      .populate("user", "name email department batch")
       .sort({ startDate: -1 })
       .limit(100);
     res.json(results);

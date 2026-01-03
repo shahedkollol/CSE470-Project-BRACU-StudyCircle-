@@ -5,6 +5,23 @@ import { useAuth } from "../context/AuthContext";
 function EntryCard({ entry, onDelete, onEdit }) {
   return (
     <li className="card" style={{ padding: "12px" }}>
+      {entry.user && entry.user.name && (
+        <div
+          style={{
+            marginBottom: "8px",
+            borderBottom: "1px solid #eee",
+            paddingBottom: "8px",
+          }}
+        >
+          <strong>{entry.user.name}</strong>
+          <span
+            style={{ fontSize: "0.85em", color: "#666", marginLeft: "8px" }}
+          >
+            {entry.user.batch && `Batch ${entry.user.batch}`}
+            {entry.user.department && ` • ${entry.user.department}`}
+          </span>
+        </div>
+      )}
       <div>
         <strong>{entry.title}</strong> @ {entry.company}
       </div>
@@ -258,31 +275,110 @@ export default function AlumniCareers() {
 
       <div className="card">
         <h2>Analytics</h2>
-        <div>
-          <strong>By Industry</strong>
-          <ul className="list">
-            {analytics.byIndustry?.map((row) => (
-              <li key={row._id}>
-                {row._id}: {row.count}
-              </li>
-            ))}
-            {(!analytics.byIndustry || analytics.byIndustry.length === 0) && (
-              <li>No data.</li>
-            )}
-          </ul>
-        </div>
-        <div>
-          <strong>By Start Year</strong>
-          <ul className="list">
-            {analytics.byYear?.map((row) => (
-              <li key={row._id}>
-                {row._id}: {row.count}
-              </li>
-            ))}
-            {(!analytics.byYear || analytics.byYear.length === 0) && (
-              <li>No data.</li>
-            )}
-          </ul>
+        <div
+          style={{
+            display: "grid",
+            gap: "24px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          }}
+        >
+          <div>
+            <h3>By Industry</h3>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              {analytics.byIndustry?.map((row) => {
+                const max = Math.max(
+                  ...(analytics.byIndustry?.map((r) => r.count) || [0]),
+                  1
+                );
+                const pct = (row.count / max) * 100;
+                return (
+                  <div key={row._id}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "0.9em",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <span>{row._id}</span>
+                      <strong>{row.count}</strong>
+                    </div>
+                    <div
+                      style={{
+                        background: "#f0f0f0",
+                        height: "8px",
+                        borderRadius: "4px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${pct}%`,
+                          background: "#4caf50",
+                          height: "100%",
+                          transition: "width 0.5s ease",
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!analytics.byIndustry ||
+                analytics.byIndustry.length === 0) && <p>No data.</p>}
+            </div>
+          </div>
+          <div>
+            <h3>By Start Year</h3>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              {analytics.byYear?.map((row) => {
+                const max = Math.max(
+                  ...(analytics.byYear?.map((r) => r.count) || [0]),
+                  1
+                );
+                const pct = (row.count / max) * 100;
+                return (
+                  <div key={row._id}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "0.9em",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <span>{row._id}</span>
+                      <strong>{row.count}</strong>
+                    </div>
+                    <div
+                      style={{
+                        background: "#f0f0f0",
+                        height: "8px",
+                        borderRadius: "4px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${pct}%`,
+                          background: "#2196f3",
+                          height: "100%",
+                          transition: "width 0.5s ease",
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!analytics.byYear || analytics.byYear.length === 0) && (
+                <p>No data.</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
