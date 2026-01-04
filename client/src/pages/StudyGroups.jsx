@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
@@ -142,7 +143,17 @@ export default function StudyGroups() {
                 <div>Status: {g.status}</div>
                 <div style={{ marginTop: 8 }}>
                   {isMember ? (
-                    <button onClick={() => leaveGroup(g._id)}>Leave</button>
+                    <>
+                      <button
+                        onClick={() => leaveGroup(g._id)}
+                        style={{ marginRight: 8 }}
+                      >
+                        Leave
+                      </button>
+                      <Link to={`/study-groups/${g._id}/resources`}>
+                        <button style={{ marginRight: 0 }}>Resources</button>
+                      </Link>
+                    </>
                   ) : (
                     <button onClick={() => joinGroup(g._id)} disabled={isFull}>
                       {isFull ? "Full" : "Join"}

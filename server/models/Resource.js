@@ -10,6 +10,7 @@ const resourceSchema = new mongoose.Schema(
     fileType: String, //PDF,DOCX,PPT
     fileUrl: { type: String, required: true },
     tags: [String],
+    groupId: { type: mongoose.Schema.Types.ObjectId, ref: "StudyGroup" }, // Optional: if null, resource is public
     downloadCount: { type: Number, default: 0 },
     viewCount: { type: Number, default: 0 },
     averageRating: { type: Number, default: 0 },

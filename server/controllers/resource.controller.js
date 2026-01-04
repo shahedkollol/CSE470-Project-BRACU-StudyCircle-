@@ -286,4 +286,92 @@ module.exports = {
   listBookmarks,
   addReview,
   reportResource,
+  listGroupResources: async (req, res) => {
+    try {
+      const StudyGroup = require("../models/StudyGroup");
+      const { groupId } = req.params;
+      const group = await StudyGroup.findById(groupId);
+      if (!group)
+        return res.status(404).json({ message: "Study group not found" });
+
+      // Check if user is a member
+      const userId = req.user?.id || req.user?._id;
+      const isMember =
+        userId && group.members.some((m) => m.toString() === userId.toString());
+      if (!isMember && req.user?.role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "You must be a group member to view resources" });
+      }
+
+      const resources = await Resource.find({ groupId })
+        .sort({ createdAt: -1 })
+        .populate("uploader", "name email");
+      res.json(resources);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
+
+  createGroupResource: async (req, res) => {
+    try {
+      const StudyGroup = require("../models/StudyGroup");
+      const { groupId } = req.params;
+      const group = await StudyGroup.findById(groupId);
+      if (!group)
+        return res.status(404).json({ message: "Study group not found" });
+
+      // Check if user is a member
+      const userId = req.user?.id || req.user?._id;
+      const isMember =
+        userId && group.members.some((m) => m.toString() === userId.toString());
+      if (!isMember && req.user?.role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "You must be a group member to upload resources" });
+      }
+
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const resource = await Resource.create({
+        ...req.body,
+        uploader: req.user.id,
+        groupId,
+      });
+
+      res.status(201).json(resource);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deleteGroupResource: async (req, res) => {
+    try {
+      const StudyGroup = require("../models/StudyGroup");
+      const { groupId, resourceId } = req.params;
+      const group = await StudyGroup.findById(groupId);
+      if (!group)
+        return res.status(404).json({ message: "Study group not found" });
+
+      const resource = await Resource.findById(resourceId);
+      if (!resource)
+        return res.status(404).json({ message: "Resource not found" });
+
+      // Check ownership or membership
+      const userId = req.user?.id || req.user?._id;
+      const isOwner = resource.uploader?.toString() === userId;
+      const isMember =
+        userId && group.members.some((m) => m.toString() === userId.toString());
+      if (!isOwner && !isMember && req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      await resource.deleteOne();
+      res.json({ message: "Resource deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
 };

@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Resources from "./pages/Resources";
 import StudyGroups from "./pages/StudyGroups";
+import GroupResources from "./pages/GroupResources";
 import Thesis from "./pages/Thesis";
 import TutoringPosts from "./pages/TutoringPosts";
 import TutoringSessions from "./pages/TutoringSessions";
@@ -124,6 +125,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Calendar />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/study-groups/:groupId/resources"
+            element={
+              <ProtectedRoute>
+                <GroupResources />
               </ProtectedRoute>
             }
           />

@@ -1,17 +1,19 @@
 const router = require("express").Router();
-const studyGroupController = require("../controllers/studyGroup.controller");
-const authMiddleware = require("../middleware/auth.middleware");
+const ctrl = require("../controllers/studyGroup.controller");
+const resourceCtrl = require("../controllers/resource.controller");
 
-// create study group
-router.post("/", studyGroupController.createStudyGroup);
+// Study Group routes
+router.post("/", ctrl.createStudyGroup);
+router.get("/", ctrl.getAllStudyGroups);
+router.post("/:id/join", ctrl.joinStudyGroup);
+router.post("/:id/leave", ctrl.leaveStudyGroup);
 
-// get all study groups
-router.get("/", studyGroupController.getAllStudyGroups);
-
-// join study group
-router.post("/:id/join", authMiddleware, studyGroupController.joinStudyGroup);
-
-// leave study group
-router.post("/:id/leave", authMiddleware, studyGroupController.leaveStudyGroup);
+// Group Resources routes (member-only)
+router.get("/:groupId/resources", resourceCtrl.listGroupResources);
+router.post("/:groupId/resources", resourceCtrl.createGroupResource);
+router.delete(
+  "/:groupId/resources/:resourceId",
+  resourceCtrl.deleteGroupResource
+);
 
 module.exports = router;

@@ -62,6 +62,18 @@ export const api = {
         body: { userId: user?.id || user?._id || user },
         token,
       }),
+    groupResources: (groupId) => request(`/study-groups/${groupId}/resources`),
+    uploadGroupResource: (groupId, body, token) =>
+      request(`/study-groups/${groupId}/resources`, {
+        method: "POST",
+        body,
+        token,
+      }),
+    deleteGroupResource: (groupId, resourceId, token) =>
+      request(`/study-groups/${groupId}/resources/${resourceId}`, {
+        method: "DELETE",
+        token,
+      }),
   },
   events: {
     list: () => request("/events"),
