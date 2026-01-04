@@ -71,7 +71,7 @@ async function sendEventReminders(req, res) {
     // Find all upcoming events (within next 24 hours) that haven't sent reminders yet
     const now = new Date();
     const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    
+
     const upcomingEvents = await Event.find({
       dateTime: { $gte: now, $lte: in24Hours },
       reminderSent: false,
@@ -85,7 +85,9 @@ async function sendEventReminders(req, res) {
         await Notification.create({
           user: attendee._id,
           title: `Reminder: ${event.title}`,
-          message: `Event "${event.title}" is happening at ${new Date(event.dateTime).toLocaleString()} in ${event.location}`,
+          message: `Event "${event.title}" is happening at ${new Date(
+            event.dateTime
+          ).toLocaleString()} in ${event.location}`,
           type: "event_reminder",
           relatedId: event._id.toString(),
         });

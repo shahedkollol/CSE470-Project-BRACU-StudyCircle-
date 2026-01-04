@@ -12,6 +12,7 @@ export default function Events() {
     location: "",
   });
   const [error, setError] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
 
   const load = async () => {
     try {
@@ -62,6 +63,21 @@ export default function Events() {
     }
   };
 
+  const sendReminders = async () => {
+    try {
+      setReminderMessage("");
+      setError("");
+      const response = await api.events.sendReminders();
+      setReminderMessage(
+        `✅ Success! ${response.remindersSent} event reminder(s) sent to confirmed attendees.`
+      );
+      // Reload to refresh notification status
+      setTimeout(() => load(), 1000);
+    } catch (err) {
+      setError(`Failed to send reminders: ${err.message}`);
+    }
+  };
+
   return (
     <div className="grid">
       <div className="card">
@@ -96,6 +112,27 @@ export default function Events() {
       </div>
       <div className="card">
         <h2>Events</h2>
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={sendReminders}
+            style={{
+              background: "#4CAF50",
+              color: "white",
+              padding: "10px 16px",
+              borderRadius: 4,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            📬 Send Reminders to Attendees
+          </button>
+          {reminderMessage && (
+            <p style={{ color: "#4CAF50", marginTop: 12, fontWeight: "bold" }}>
+              {reminderMessage}
+            </p>
+          )}
+        </div>
         <ul className="list">
           {list.map((ev) => (
             <li key={ev._id}>
@@ -105,7 +142,14 @@ export default function Events() {
               <div>{ev.description}</div>
               <div>{ev.dateTime || `${ev.date} ${ev.time}`}</div>
               <div>{ev.location}</div>
-              <div>Attendees: {ev.attendees?.length || 0}</div>
+              <div>
+                Attendees: {ev.attendees?.length || 0}
+                {ev.reminderSent && (
+                  <span style={{ marginLeft: 8, color: "#4CAF50" }}>
+                    ✓ Reminder sent
+                  </span>
+                )}
+              </div>
               {user && (
                 <div className="actions-row">
                   <button onClick={() => rsvp(ev._id)}>RSVP</button>

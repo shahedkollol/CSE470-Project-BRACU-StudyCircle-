@@ -91,6 +91,8 @@ export const api = {
         body: { userId },
         token,
       }),
+    sendReminders: () =>
+      request("/events/send-reminders/trigger", { method: "POST" }),
   },
   tutoring: {
     listPosts: (params = {}) => {
