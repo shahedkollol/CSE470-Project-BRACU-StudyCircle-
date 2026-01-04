@@ -13,6 +13,23 @@ exports.createStudyGroup = async (req, res) => {
 
     if (!title) return res.status(400).json({ message: "title is required" });
 
+    // Check daily limit (max 5 groups per day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const groupsCreatedToday = await StudyGroup.countDocuments({
+      createdAt: { $gte: today, $lt: tomorrow },
+    });
+
+    if (groupsCreatedToday >= 5) {
+      return res.status(429).json({
+        message:
+          "Daily limit reached: Only 5 groups can be created per day. Please try again tomorrow.",
+      });
+    }
+
     const userId = req.user?.id || req.user?._id; // optional
 
     const group = await StudyGroup.create({
