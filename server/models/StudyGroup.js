@@ -12,7 +12,7 @@ const studyGroupSchema = new mongoose.Schema(
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
     // Maximum allowed members for this group
-    maxMembers: { type: Number, default: 4 },
+    maxMembers: { type: Number, default: 2 },
 
     status: {
       type: String,

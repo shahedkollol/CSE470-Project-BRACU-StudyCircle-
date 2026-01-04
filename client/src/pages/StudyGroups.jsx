@@ -10,7 +10,7 @@ export default function StudyGroups() {
     title: "",
     course: "",
     creatorName: "",
-    maxMembers: 4,
+    maxMembers: 2,
   });
   const [error, setError] = useState("");
 
@@ -43,7 +43,7 @@ export default function StudyGroups() {
         title: "",
         course: "",
         creatorName: user?.name || "",
-        maxMembers: 4,
+        maxMembers: 2,
       });
       load();
     } catch (err) {
