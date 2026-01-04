@@ -28,10 +28,10 @@ function App() {
         </div>
         <nav className="nav">
           <Link to="/study-groups">Study Groups</Link>
+          <Link to="/thesis">Thesis Repository</Link>
           <Link to="/events">Events</Link>
           <Link to="/tutoring/posts">Tutoring</Link>
           <Link to="/resources">Resources</Link>
-          <Link to="/thesis">Thesis</Link>
           <Link to="/community">Community</Link>
           <Link to="/alumni">Careers</Link>
           {user && <Link to="/notifications">Notifications</Link>}

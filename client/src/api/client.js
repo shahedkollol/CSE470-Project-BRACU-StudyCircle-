@@ -136,19 +136,19 @@ export const api = {
         body:
           body?.file && typeof FormData !== "undefined"
             ? (() => {
-                const fd = new FormData();
-                Object.entries(body).forEach(([key, val]) => {
-                  if (val === undefined || val === null) return;
-                  if (key === "file") {
-                    fd.append("file", val);
-                  } else if (Array.isArray(val)) {
-                    val.forEach((item) => fd.append(key, item));
-                  } else {
-                    fd.append(key, val);
-                  }
-                });
-                return fd;
-              })()
+              const fd = new FormData();
+              Object.entries(body).forEach(([key, val]) => {
+                if (val === undefined || val === null) return;
+                if (key === "file") {
+                  fd.append("file", val);
+                } else if (Array.isArray(val)) {
+                  val.forEach((item) => fd.append(key, item));
+                } else {
+                  fd.append(key, val);
+                }
+              });
+              return fd;
+            })()
             : body,
         token,
       }),
@@ -176,14 +176,47 @@ export const api = {
         body: { userId },
         token,
       }),
+    // Repository
+    listRepository: (params = {}) => {
+      const qs = new URLSearchParams();
+      if (params.department) qs.set("department", params.department);
+      if (params.keyword) qs.set("keyword", params.keyword);
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/thesis/repository${suffix}`);
+    },
     search: (query) =>
       request(
-        `/thesis/repository/search${
-          query ? `?keyword=${encodeURIComponent(query)}` : ""
+        `/thesis/repository/search${query ? `?keyword=${encodeURIComponent(query)}` : ""
         }`
       ),
-    createThesis: (body, token) =>
-      request("/thesis/repository", { method: "POST", body, token }),
+    getThesis: (id) => request(`/thesis/repository/${id}`),
+    createThesis: (body, token) => {
+      // Handle FormData for file uploads
+      if (body.pdf || body.code) {
+        const fd = new FormData();
+        Object.entries(body).forEach(([key, val]) => {
+          if (val === undefined || val === null) return;
+          if (key === "pdf" || key === "code") {
+            fd.append(key, val);
+          } else if (Array.isArray(val)) {
+            val.forEach((item) => fd.append(key, item));
+          } else {
+            fd.append(key, val);
+          }
+        });
+        return request("/thesis/repository", { method: "POST", body: fd, token });
+      }
+      return request("/thesis/repository", { method: "POST", body, token });
+    },
+    upvote: (id, token) =>
+      request(`/thesis/repository/${id}/upvote`, { method: "POST", token }),
+    downvote: (id, token) =>
+      request(`/thesis/repository/${id}/downvote`, { method: "POST", token }),
+    addReview: (id, body, token) =>
+      request(`/thesis/repository/${id}/reviews`, { method: "POST", body, token }),
+    getCitation: (id) => request(`/thesis/repository/${id}/cite`),
+    trackDownload: (id) =>
+      request(`/thesis/repository/${id}/download`, { method: "POST" }),
   },
   community: {
     listJobs: () => request("/community/jobs"),
