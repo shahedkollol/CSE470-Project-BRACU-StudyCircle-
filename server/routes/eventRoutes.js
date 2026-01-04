@@ -7,5 +7,6 @@ router.get("/", eventController.listEvents);
 router.post("/", requireUser, eventController.createEvent);
 router.post("/:id/rsvp", requireUser, eventController.rsvpEvent);
 router.post("/:id/cancel", requireUser, eventController.cancelRsvp);
+router.post("/send-reminders/trigger", eventController.sendEventReminders);
 
 module.exports = router;

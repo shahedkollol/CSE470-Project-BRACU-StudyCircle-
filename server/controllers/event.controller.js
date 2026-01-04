@@ -1,4 +1,5 @@
 const { Event } = require("../models/Community");
+const Notification = require("../models/Notification");
 
 async function listEvents(req, res) {
   try {
@@ -64,9 +65,53 @@ async function cancelRsvp(req, res) {
   }
 }
 
+// Send reminder notifications to confirmed attendees
+async function sendEventReminders(req, res) {
+  try {
+    // Find all upcoming events (within next 24 hours) that haven't sent reminders yet
+    const now = new Date();
+    const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    const upcomingEvents = await Event.find({
+      dateTime: { $gte: now, $lte: in24Hours },
+      reminderSent: false,
+    }).populate("attendees", "_id");
+
+    let remindersSent = 0;
+
+    for (const event of upcomingEvents) {
+      // Send notification to each confirmed attendee
+      for (const attendee of event.attendees) {
+        await Notification.create({
+          user: attendee._id,
+          title: `Reminder: ${event.title}`,
+          message: `Event "${event.title}" is happening at ${new Date(event.dateTime).toLocaleString()} in ${event.location}`,
+          type: "event_reminder",
+          relatedId: event._id.toString(),
+        });
+      }
+
+      // Mark reminder as sent
+      event.reminderSent = true;
+      event.reminderSentAt = new Date();
+      await event.save();
+      remindersSent++;
+    }
+
+    res.json({
+      success: true,
+      message: `Sent reminders for ${remindersSent} events to confirmed attendees`,
+      remindersSent,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
   listEvents,
   createEvent,
   rsvpEvent,
   cancelRsvp,
+  sendEventReminders,
 };

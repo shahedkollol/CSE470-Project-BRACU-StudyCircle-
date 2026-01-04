@@ -9,6 +9,8 @@ const eventSchema = new mongoose.Schema(
     dateTime: Date,
     location: String,
     attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    reminderSent: { type: Boolean, default: false },
+    reminderSentAt: { type: Date },
   },
   { timestamps: true }
 );
