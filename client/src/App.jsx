@@ -19,6 +19,7 @@ import StudyGroups from "./pages/StudyGroups";
 import Thesis from "./pages/Thesis";
 import TutoringPosts from "./pages/TutoringPosts";
 import TutoringSessions from "./pages/TutoringSessions";
+import Calendar from "./pages/Calendar";
 
 function App() {
   const { user, login, logout } = useAuth();
@@ -46,6 +47,7 @@ function App() {
           <Link to="/resources">Resources</Link>
           <Link to="/thesis">Thesis</Link>
           <Link to="/community">Community</Link>
+          <Link to="/calendar">Calendar</Link>
           <Link to="/alumni">Careers</Link>
           {user && <Link to="/notifications">Notifications</Link>}
           {user && <Link to="/profile">Profile</Link>}
@@ -113,6 +115,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <TutoringSessions />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <Calendar />
               </ProtectedRoute>
             }
           />

@@ -42,7 +42,7 @@ export default function StudyGroups() {
         title: "",
         course: "",
         creatorName: user?.name || "",
-          maxMembers: 4,
+        maxMembers: 4,
       });
       load();
     } catch (err) {
@@ -51,21 +51,31 @@ export default function StudyGroups() {
   };
 
   const joinGroup = async (groupId) => {
-    if (!user) return setError("Please login to join a group");
+    if (!user) {
+      setError("Please click Demo Student or Demo Admin button to login first");
+      return;
+    }
+    setError("");
     try {
       await api.studyGroups.join(groupId, user, token);
       load();
     } catch (err) {
+      console.error("Join error:", err);
       setError(err.message);
     }
   };
 
   const leaveGroup = async (groupId) => {
-    if (!user) return setError("Please login to leave a group");
+    if (!user) {
+      setError("Please login to leave a group");
+      return;
+    }
+    setError("");
     try {
       await api.studyGroups.leave(groupId, user, token);
       load();
     } catch (err) {
+      console.error("Leave error:", err);
       setError(err.message);
     }
   };
