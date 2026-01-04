@@ -1,7 +1,10 @@
+// import React from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
+
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
+
 import Admin from "./pages/Admin";
 import AlumniCareers from "./pages/AlumniCareers";
 import Community from "./pages/Community";
@@ -18,7 +21,16 @@ import TutoringPosts from "./pages/TutoringPosts";
 import TutoringSessions from "./pages/TutoringSessions";
 
 function App() {
-  const { user, logout } = useAuth();
+  const { user, login, logout } = useAuth();
+
+  // ✅ TEMP DEMO LOGIN (so ProtectedRoute lets you in)
+  const demoStudentLogin = () => {
+    login({ id: "demo-student", name: "Demo Student", role: "student" });
+  };
+
+  const demoAdminLogin = () => {
+    login({ id: "demo-admin", name: "Demo Admin", role: "admin" });
+  };
 
   return (
     <div className="app">
@@ -26,6 +38,7 @@ function App() {
         <div className="brand">
           <Link to="/">BRACU Study Circle</Link>
         </div>
+
         <nav className="nav">
           <Link to="/study-groups">Study Groups</Link>
           <Link to="/events">Events</Link>
@@ -38,6 +51,7 @@ function App() {
           {user && <Link to="/profile">Profile</Link>}
           {user?.role === "admin" && <Link to="/admin">Admin</Link>}
         </nav>
+
         <div className="auth-box">
           {user ? (
             <>
@@ -48,6 +62,14 @@ function App() {
             <>
               <Link to="/login">Login</Link>
               <Link to="/register">Register</Link>
+
+              {/* ✅ TEMP: Quick demo buttons */}
+              <button onClick={demoStudentLogin} style={{ marginLeft: 8 }}>
+                Demo Student
+              </button>
+              <button onClick={demoAdminLogin} style={{ marginLeft: 8 }}>
+                Demo Admin
+              </button>
             </>
           )}
         </div>
@@ -67,6 +89,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/events"
             element={
@@ -75,6 +98,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/tutoring/posts"
             element={
@@ -83,6 +107,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/tutoring/sessions"
             element={
@@ -91,6 +116,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/resources"
             element={
@@ -99,6 +125,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/thesis"
             element={
@@ -107,6 +134,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/community"
             element={
@@ -115,6 +143,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/notifications"
             element={
@@ -123,6 +152,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/alumni"
             element={
@@ -131,6 +161,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/profile"
             element={
@@ -139,6 +170,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/admin"
             element={

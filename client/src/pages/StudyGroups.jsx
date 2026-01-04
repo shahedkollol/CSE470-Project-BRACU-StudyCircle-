@@ -5,7 +5,12 @@ import { useAuth } from "../context/AuthContext";
 export default function StudyGroups() {
   const { user, token } = useAuth();
   const [list, setList] = useState([]);
-  const [form, setForm] = useState({ title: "", course: "", creatorName: "" });
+  const [form, setForm] = useState({
+    title: "",
+    course: "",
+    creatorName: "",
+    maxMembers: 4,
+  });
   const [error, setError] = useState("");
 
   const load = async () => {
@@ -33,7 +38,32 @@ export default function StudyGroups() {
     setError("");
     try {
       await api.studyGroups.create(form, token);
-      setForm({ title: "", course: "", creatorName: user?.name || "" });
+      setForm({
+        title: "",
+        course: "",
+        creatorName: user?.name || "",
+          maxMembers: 4,
+      });
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const joinGroup = async (groupId) => {
+    if (!user) return setError("Please login to join a group");
+    try {
+      await api.studyGroups.join(groupId, user, token);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const leaveGroup = async (groupId) => {
+    if (!user) return setError("Please login to leave a group");
+    try {
+      await api.studyGroups.leave(groupId, user, token);
       load();
     } catch (err) {
       setError(err.message);
@@ -54,6 +84,15 @@ export default function StudyGroups() {
             onChange={onChange}
             required
           />
+          <label>Max Members</label>
+          <input
+            name="maxMembers"
+            type="number"
+            value={form.maxMembers}
+            onChange={onChange}
+            min={1}
+            required
+          />
           <label>Creator Name</label>
           <input
             name="creatorName"
@@ -68,16 +107,41 @@ export default function StudyGroups() {
       <div className="card">
         <h2>Study Groups</h2>
         <ul className="list">
-          {list.map((g) => (
-            <li key={g._id}>
-              <div>
-                <strong>{g.title}</strong> ({g.course})
-              </div>
-              <div>Creator: {g.creatorName}</div>
-              <div>Members: {g.members?.length || 0}</div>
-              <div>Status: {g.status}</div>
-            </li>
-          ))}
+          {list.map((g) => {
+            const membersCount =
+              g.membersCount ?? (g.members ? g.members.length : 0);
+            const max = g.maxMembers || 4;
+            const isMember =
+              user &&
+              g.members &&
+              g.members.some(
+                (m) =>
+                  (m._id || m).toString() ===
+                  (user.id || user._id || user).toString()
+              );
+            const isFull = membersCount >= max;
+            return (
+              <li key={g._id}>
+                <div>
+                  <strong>{g.title}</strong> ({g.course})
+                </div>
+                <div>Creator: {g.creatorName}</div>
+                <div>
+                  Members: {membersCount} / {max}
+                </div>
+                <div>Status: {g.status}</div>
+                <div style={{ marginTop: 8 }}>
+                  {isMember ? (
+                    <button onClick={() => leaveGroup(g._id)}>Leave</button>
+                  ) : (
+                    <button onClick={() => joinGroup(g._id)} disabled={isFull}>
+                      {isFull ? "Full" : "Join"}
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
           {list.length === 0 && <li>No groups yet.</li>}
         </ul>
       </div>

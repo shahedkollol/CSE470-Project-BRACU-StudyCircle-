@@ -50,6 +50,10 @@ export const api = {
     list: () => request("/study-groups"),
     create: (body, token) =>
       request("/study-groups", { method: "POST", body, token }),
+    join: (id, user, token) =>
+      request(`/study-groups/${id}/join`, { method: "POST", user, token }),
+    leave: (id, user, token) =>
+      request(`/study-groups/${id}/leave`, { method: "POST", user, token }),
   },
   events: {
     list: () => request("/events"),
